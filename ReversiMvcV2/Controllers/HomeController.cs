@@ -29,7 +29,14 @@ namespace ReversiMvcV2.Controllers
 
             if (speler == null)
             {
-                _context.Spelers.Add(new Speler(currentUserID));
+                _context.Spelers.Add(new Speler(currentUserID, currentUser.FindFirstValue(ClaimTypes.Email).ToString()));
+                _context.SaveChanges();
+            }
+
+            Spel? spel = ApiRequester.GetSpelByPlayerId(currentUserID);
+            if(spel is not null)
+            {
+                return RedirectToAction("Play", "Spel", new { spel.ID });
             }
 
             return View();

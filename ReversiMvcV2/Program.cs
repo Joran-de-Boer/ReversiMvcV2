@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ReversiMvcV2.DAL;
 using ReversiMvcV2.Data;
+using ReversiMvcV2.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 connectionString = builder.Configuration.GetConnectionString("ReversiDb2");
 builder.Services.AddDbContext<SpelerContext>(x => x.UseSqlServer(connectionString));
+builder.Services.AddSignalR();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -44,5 +46,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+app.MapHub<ReversiHub>("/ReversiHub");
 
 app.Run();

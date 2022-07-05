@@ -16,3 +16,36 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.PlayBoard{
+    display: inline-grid;
+    grid-template-columns: repeat(8, 75px);
+    grid-template-rows: repeat(8, 75px);
+    background-color: burlywood;
+    padding: 10px;
+}
+
+.Tile{
+    background-color: brown;
+    border: 1px solid black;
+    padding: 20px;
+}
+
+.Chip{
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.Black{
+    background-color: black;
+    border-color: white;
+}
+
+.White{
+    background-color: white;
+    border-color: black;
+}
+

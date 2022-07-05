@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = "Play";
+
+    
 }
 
 <h1>Details</h1>
@@ -26,6 +28,23 @@
             @Html.DisplayNameFor(model => model.Speler2)
         </dt>
     </dl>
+</div>
+<div>
+<div class="PlayBoard">
+    @for (var i = 0; i < 8; i++)
+    {   
+        @for (var ii = 0; ii < 8; ii++)
+        {
+            <div class="Tile" id="Tile"></div>
+        }
+        
+    }
+</div>
+
+    @section Scripts{
+        <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+        <script src="~/js/app.js"></script>
+    }
 </div>
 <div>
     <a asp-action="Index">Back to List</a>

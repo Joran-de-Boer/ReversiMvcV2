@@ -1,5 +1,8 @@
 ﻿using ReversiMvcV2.Models;
+using ReversiMvcV2.Models.Request;
 using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 
 namespace ReversiMvcV2.Controllers
 {
@@ -33,6 +36,27 @@ namespace ReversiMvcV2.Controllers
             }
         }
 
+        public static Spel? GetSpelByPlayerId(string guid)
+        {
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(api + $"/Playertoken/{guid}");
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                HttpResponseMessage response = client.GetAsync(client.BaseAddress).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine(response.Content);
+                    SpelJson? spelJson = response.Content.ReadAsAsync<SpelJson>().Result;
+                    if (spelJson is null) { return null; }
+                    Spel spel = new Spel(spelJson);
+                    return spel;
+                }
+                return null;
+            }
+        }
+
         public static Spel? GetSpelByGuid(string guid)
         {
             using (var client = new HttpClient())
@@ -41,7 +65,7 @@ namespace ReversiMvcV2.Controllers
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                HttpResponseMessage response = client.GetAsync(api).Result;
+                HttpResponseMessage response = client.GetAsync(client.BaseAddress).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     Console.WriteLine(response.Content);
@@ -53,6 +77,25 @@ namespace ReversiMvcV2.Controllers
                 return null;
             }
 
+        }
+
+        public static void JoinSpel(string spelerId, string spelId)
+        {
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(api + $"/Join");
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                var request = JsonSerializer.Serialize( new JoinSpelRequest() { SpelerId = spelerId, SpelId = spelId });
+                var requestContent = new StringContent(request, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = client.PutAsync(client.BaseAddress, requestContent).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var stringData = response.Content.ReadAsAsync<Object>();
+                }
+            }
         }
     }
 }
