@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ReversiMvcV2.DAL;
 using ReversiMvcV2.Models;
 using System.Security.Claims;
 
@@ -8,8 +9,17 @@ namespace ReversiMvcV2.Controllers
     public class SpelController : Controller
     {
 
+        private SpelerContext _context { get; set; }
+
         //https://localhost:7184/Spel
         // GET: SpelController
+        public SpelController( SpelerContext context)
+        {
+            _context = context;
+
+        }
+
+
         public ActionResult Index()
         {
             string userid;
@@ -115,16 +125,28 @@ namespace ReversiMvcV2.Controllers
         // POST: SpelController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create(string omschrijving)
         {
-            try
+            string userid;
+            using (GetClaimsPrincipal getter = new GetClaimsPrincipal())
             {
-                return RedirectToAction(nameof(Index));
+                userid = getter.GetUserId(this.User);
             }
-            catch
+            ApiRequester.CreateSpel(userid, omschrijving);
+
+            using (Redirecter redirecter = new Redirecter())
             {
-                return View();
+                if (userid != null)
+                {
+                    var game = redirecter.TryRedirectToGame(userid);
+                    if (game != null)
+                    {
+                        return (ActionResult)game;
+                    }
+                }
             }
+            return NotFound();
+
         }
 
         // POST: SpelController/Edit/5
@@ -140,6 +162,60 @@ namespace ReversiMvcV2.Controllers
             {
                 return View();
             }
+        }
+
+        [HttpPost("Win")]
+        public void Win()
+        {
+            string userid;
+            using (GetClaimsPrincipal getter = new GetClaimsPrincipal())
+            {
+                userid = getter.GetUserId(this.User);
+            }
+
+            Speler? speler = _context.Spelers.Where(speler => speler.Guid == userid).FirstOrDefault();
+            if (speler != null)
+            {
+                speler.AantalGewonnen += 1;
+                _context.SaveChanges();
+            }
+
+        }
+
+        [HttpPost("Draw")]
+        public void Draw()
+        {
+            string userid;
+            using (GetClaimsPrincipal getter = new GetClaimsPrincipal())
+            {
+                userid = getter.GetUserId(this.User);
+            }
+
+            Speler? speler = _context.Spelers.Where(speler => speler.Guid == userid).FirstOrDefault();
+            if (speler != null)
+            {
+                speler.AantalGelijk += 1;
+                _context.SaveChanges();
+            }
+
+        }
+
+        [HttpPost("Lose")]
+        public void Lose()
+        {
+            string userid;
+            using (GetClaimsPrincipal getter = new GetClaimsPrincipal())
+            {
+                userid = getter.GetUserId(this.User);
+            }
+
+            Speler? speler = _context.Spelers.Where(speler => speler.Guid == userid).FirstOrDefault();
+            if (speler != null)
+            {
+                speler.AantalVerloren += 1;
+                _context.SaveChanges();
+            }
+
         }
     }
 }

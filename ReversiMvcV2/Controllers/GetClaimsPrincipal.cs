@@ -9,5 +9,12 @@ namespace ReversiMvcV2.Controllers
         {
             return currentUser?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
+
+        //public ClaimsPrincipal? GetClaimsPrincipal(string id)
+        //{
+        //    if (id == null) return null;
+        //    ClaimsPrincipal principal = ClaimsPrincipal
+            
+        //}
     }
 }

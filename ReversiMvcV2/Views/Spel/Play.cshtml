@@ -1,33 +1,19 @@
-﻿@model ReversiMvcV2.Models.Spel
+﻿@using ReversiMvcV2.Controllers
+@model ReversiMvcV2.Models.Spel
 
 @{
     ViewData["Title"] = "Play";
 
-    
+    string playerToken;
+    using(GetClaimsPrincipal getter = new GetClaimsPrincipal())
+    {
+        playerToken = getter.GetUserId(this.User);
+    };
 }
 
-<h1>Details</h1>
 
 <div>
-    <h4>Speler</h4>
     <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ID)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Omschrijving)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AanDeBeurt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Speler1)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Speler2)
-        </dt>
-    </dl>
 </div>
 <div>
 <div class="PlayBoard">
@@ -35,15 +21,62 @@
     {   
         @for (var ii = 0; ii < 8; ii++)
         {
-            <div class="Tile" id="Tile"></div>
+            string id = i.ToString() + "_" + ii.ToString();
+            <div class="Tile" id=@id></div>
         }
         
     }
+    <button id="pass" class="disabled">Pass</button>
 </div>
 
+    @{
+        string winUrl = Url.Action("Win", "Spel");
+        string drawUrl = Url.Action("Draw", "Spel");
+        string loseUrl = Url.Action("Lose", "Spel");
+
+    }
+
     @section Scripts{
+
+        <script>
+            const gameToken = `@Model.ID`;
+            console.log(gameToken);
+            const playerToken = `@playerToken`;
+            let win = function(){ fetch(`@winUrl`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+                }
+            }
+            )}
+
+            let draw = function(){ fetch(`@drawUrl`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+                }
+            }
+            )}
+
+            let lose = function(){ fetch(`@loseUrl`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+                }
+            }
+            )}
+            
+            //lose = function (){}
+            //})
+                
+        </script>
+
         <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+        <script src="~/js/SignalR.js"></script>
         <script src="~/js/app.js"></script>
+        <script>
+            Game.init();
+        </script>
     }
 </div>
 <div>

@@ -1,103 +1,93 @@
 "use strict";
 
-var connection = new signalR.HubConnectionBuilder().withUrl("/ReversiHub").build();
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-function afterInit() {
-  console.log('Game init voltooid');
-} // -------------------------------GAME----------------------------------
-
-
-var Game = function (url) {
-  console.log(url);
+// -------------------------------GAME----------------------------------
+var Game = function (apiUrl) {
   var configMap = {
-    apiUrl: url
+    apiUrl: undefined,
+    gameToken: gameToken,
+    playerToken: playerToken
   };
   var stateMap = {
     gameState: undefined
   };
 
-  var privateInit = function privateInit(callbackFunction) {
-    console.log(configMap.apiUrl);
+  var privateInit = function privateInit() {
+    configMap.apiUrl = apiUrl;
+    Game.Model.init(configMap.apiUrl, configMap.gameToken, configMap.playerToken);
+    Game.Data.init(configMap.apiUrl, configMap.gameToken, configMap.playerToken);
+    Game.Reversi.init(configMap.apiUrl, configMap.gameToken, configMap.playerToken, win, draw, lose);
+    Game.Stats.init(configMap.apiUrl, configMap.gameToken, configMap.playerToken);
+    window.addEventListener("beforeunload", Game.Reversi.doLeave);
     setInterval(_getCurrentGameState, 2000);
-    callbackFunction();
   };
 
   var _getCurrentGameState = function _getCurrentGameState() {
-    stateMap.gameState = Game.Model.getGameState();
+    var newGameState = Game.Model.getGameState();
+    newGameState.then(function (response) {
+      console.log(response);
+
+      if (response != stateMap.gameState) {
+        stateMap.gameState = response;
+        Game.Reversi.updateGameState(response);
+      }
+    });
   };
 
   return {
     init: privateInit
   };
-}('/api/url'); // --------------------------------DATA-----------------------------------
+}('https://localhost:7258/'); // --------------------------------DATA-----------------------------------
 
 
 Game.Data = function () {
-  console.log('hallo vanuit module Data');
   var configMap = {
-    apiKey: "9f5181271bb7622332fe45cbd7963f2d",
-    mock: [{
-      url: "api/Spel/Beurt",
-      data: {
-        ID: 1,
-        Omschrijving: "Omschrijvinkje",
-        Token: "XXXXX",
-        Speler1Token: "1TOKEN",
-        Speler2Token: "2TOKEN",
-        Bord: "8883WB33BW3888",
-        AandeBeurt: 1
-      }
-    }]
-  };
-  var stateMap = {
-    environment: "development"
+    apiUrl: undefined,
+    gameToken: undefined,
+    playerToken: undefined
   };
 
-  var privateInit = function privateInit(environment) {
-    setEnvironment(environment);
-    /*
-    if(stateMap.environment == `production`){
-        serverRequest()
-    }
-    if(stateMap.environment == 'development'){
-        getMockData()
-    }
-       */
+  var privateInit = function privateInit(url, gToken, pToken) {
+    configMap.apiUrl = url;
+    configMap.gameToken = gToken;
+    configMap.playerToken = pToken;
   };
-
-  var setEnvironment = function setEnvironment(environment) {
-    var environments = ["production", "development"];
-
-    if (environments.includes(environment)) {
-      stateMap.environment = environment;
-    } else {
-      throw new Error("Environment doesn't exist");
-    }
-  };
-
-  var serverRequest = function serverRequest() {};
 
   var get = function get(url) {
-    // returns a promise
-    if (stateMap.environment == "production") {
-      return $.get(url + configMap.apiKey).then(function (r) {
-        return r;
-      })["catch"](function (e) {
-        console.log(e.message);
-      });
-    } else if (stateMap.environment == "development") {
-      return getMockData(url);
-    }
+    //api request from url
+    return fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  };
+
+  var post = function post(url, data) {
+    //api request from url
+    return fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+  };
+
+  var put = function put(url, data) {
+    //api request from url
+    return fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
   };
 
   var getMockData = function getMockData(url) {
@@ -115,79 +105,261 @@ Game.Data = function () {
 
   return {
     init: privateInit,
-    get: get
+    get: get,
+    post: post,
+    put: put
   };
 }(); // -----------------------------------------------REVERSI-----------------------------
 
 
 Game.Reversi = function () {
-  console.log('hallo vanuit module reversi');
-  var configMap = {};
+  var configMap = {
+    Board: undefined,
+    Beurt: undefined,
+    playerToken: undefined,
+    apiUrl: undefined,
+    win: undefined,
+    draw: undefined,
+    lose: undefined
+  };
 
-  var privateInit = function privateInit() {
-    console.log(configMap.apiUrl);
+  var addChip = function addChip(x, y, color) {
+    var tile = $("#".concat(x, "_").concat(y))[0];
+
+    if (tile.classList.contains("Tile")) {
+      var chip = document.createElement("div");
+      chip.className = "Chip";
+
+      if (color === "b") {
+        chip.classList.add("Black");
+      }
+
+      if (color === "w") {
+        chip.classList.add("White");
+      }
+
+      if (tile.children.length == 0) {
+        tile.appendChild(chip);
+      }
+    }
+  };
+
+  $().ready(function () {
+    $(".Tile").click(addChip);
+  });
+
+  var privateInit = function privateInit(url, gameToken, playerToken, win, draw, lose) {
+    configMap.apiUrl = url;
+    configMap.gameToken = gameToken;
+    configMap.playerToken = playerToken;
+    configMap.win = win;
+    configMap.draw = draw;
+    configMap.lose = lose;
+  };
+
+  var isNumber = function isNumber(_char) {
+    if (typeof _char !== 'string') {
+      return false;
+    }
+
+    if (_char.trim() === '') {
+      return false;
+    }
+
+    return !isNaN(_char);
+  };
+
+  var updateBoard = function updateBoard(Board) {
+    $(".Chip").remove();
+    var x = 0;
+    var y = 0;
+    var BoardArr = Array.from(Board);
+    BoardArr.forEach(function (_char2) {
+      if (x == 8) {
+        y++;
+        x = 0;
+      }
+
+      if (_char2 == "W") {
+        addChip(x, y, "w");
+        x++;
+      }
+
+      if (_char2 == "B") {
+        addChip(x, y, "b");
+        x++;
+      }
+
+      if (isNumber(_char2)) {
+        var num = parseInt(_char2);
+
+        for (var i = 0; i < num; i++) {
+          x++;
+        }
+      }
+    });
+  };
+
+  var doTurn = function doTurn(event) {
+    var tile = event.target;
+    var x = tile.id.split("_")[0];
+    var y = tile.id.split("_")[1];
+    var body = {
+      spelToken: configMap.gameToken,
+      spelerToken: configMap.playerToken,
+      zet: {
+        rijZet: x,
+        kolomZet: y
+      }
+    };
+    Game.Data.put("".concat(configMap.apiUrl, "api/spel/zet"), body).then(function (response) {
+      console.log(response);
+    });
+
+    Game._getCurrentGameState();
+  };
+
+  var doPass = function doPass() {
+    var body = {
+      spelToken: configMap.gameToken,
+      spelerToken: configMap.playerToken
+    };
+    Game.Data.put("".concat(configMap.apiUrl, "api/spel/pass"), body).then(function (response) {
+      console.log(response);
+    })["catch"](function (error) {
+      console.log(error);
+    }).then(function () {
+      _getCurrentGameState();
+    });
+  };
+
+  var doLeave = function doLeave() {
+    var body = {
+      SpelId: configMap.gameToken,
+      SpelerId: configMap.playerToken
+    };
+    Game.Data.put("".concat(configMap.apiUrl, "api/spel/leave"), body);
+  };
+
+  var updateBeurt = function updateBeurt(bord, beurt, ZetMogelijk, Afgelopen, Gewonnen) {
+    $(".Tile").off("click");
+    $("#pass").off("click");
+
+    if (beurt && !Afgelopen && ZetMogelijk) {
+      $(".Tile").click("click", doTurn);
+    }
+
+    if (Afgelopen) {
+      var url = window.location.href;
+      var parts = url.split("/");
+      url = parts[0] + "//" + parts[2] + "/" + parts[3];
+      $(".Tile").off("click");
+
+      if (Gewonnen) {
+        alert("Gewonnen");
+        configMap.win();
+        window.location.href = url;
+        return;
+      } else {
+        alert("Verloren");
+        configMap.lose();
+        window.location.href = url;
+        return;
+      }
+
+      return;
+    }
+
+    if (beurt && !ZetMogelijk) {
+      $("#pass").click("click", doPass);
+    }
+  };
+
+  var updateGameState = function updateGameState(gameState) {
+    updateBoard(gameState.bord);
+    updateBeurt(gameState.bord, gameState.aanDeBeurt, gameState.zetMogelijk, gameState.afgelopen, gameState.gewonnen);
   };
 
   return {
-    init: privateInit
+    init: privateInit,
+    updateBoard: updateBoard,
+    updateGameState: updateGameState,
+    doLeave: doLeave
   };
 }(); // ---------------------------------Model-----------------------------
 
 
 Game.Model = function () {
-  console.log('hallo vanuit module Model');
-  var configMap = {};
-
-  var privateInit = function privateInit() {
-    console.log(configMap.apiUrl);
+  var configMap = {
+    apiUrl: undefined,
+    gameToken: undefined,
+    playerToken: undefined
   };
 
-  var getWeather = function getWeather() {
-    var url = "http://api.openweathermap.org/data/2.5/weather?q=zwolle&apikey=";
-    Game.Data.get(url);
+  var privateInit = function privateInit(url, gameToken, playerToken) {
+    configMap.apiUrl = url;
+    configMap.gameToken = gameToken;
+    configMap.playerToken = playerToken;
   };
 
-  var _getGameState = /*#__PURE__*/function () {
-    var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-      var result, turn;
-      return regeneratorRuntime.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              _context.next = 2;
-              return Game.Data.get("api/Spel/Beurt");
-
-            case 2:
-              result = _context.sent;
-              //"/game/{id}"
-              turn = result.AandeBeurt;
-
-              if (turn == 0 || turn == 1 || turn == 2) {
-                _context.next = 6;
-                break;
-              }
-
-              throw new Error("Can't determine turn order");
-
-            case 6:
-              return _context.abrupt("return", result);
-
-            case 7:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee);
-    }));
-
-    return function _getGameState() {
-      return _ref.apply(this, arguments);
+  var _getGameState = function _getGameState() {
+    // const Promise = Game.Data.get(`${configMap.apiUrl}api/spel/GameToken/${configMap.gameToken}`);
+    // let data = Promise.then(function(response){
+    //     return response.json().then(x => {
+    //         return x;
+    //     });
+    // });
+    // return data;
+    var body = {
+      spelToken: configMap.gameToken,
+      spelerToken: configMap.playerToken
     };
-  }();
+    var Promise = Game.Data.post("".concat(configMap.apiUrl, "api/spel/Gamestate"), body);
+    var data = Promise.then(function (response) {
+      return response.json().then(function (x) {
+        return x;
+      });
+    });
+    return data;
+  };
 
   return {
     init: privateInit,
     getGameState: _getGameState
+  };
+}(); //--------------------------Stats-----------------------------
+
+
+Game.Stats = function () {
+  var configMap = {
+    apiUrl: undefined,
+    gameToken: undefined,
+    playerToken: undefined
+  };
+
+  var privateInit = function privateInit(url, gameToken, playerToken) {
+    configMap.apiUrl = url;
+    configMap.gameToken = gameToken;
+    configMap.playerToken = playerToken;
+  };
+
+  var _getStats = function _getStats() {
+    var body = {
+      spelToken: configMap.gameToken,
+      spelerToken: configMap.playerToken
+    };
+    var Promise = Game.Data.post("".concat(configMap.apiUrl, "api/spel/Stats"), body);
+    var data = Promise.then(function (response) {
+      return response.json().then(function (x) {
+        return x;
+      });
+    });
+    return data;
+  };
+
+  return {
+    init: privateInit,
+    getStats: _getStats
   };
 }();
 

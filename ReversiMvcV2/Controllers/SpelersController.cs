@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ReversiMvcV2.DAL;
 using ReversiMvcV2.Models;
+using ReversiMvcV2.Models.Request;
 
 namespace ReversiMvcV2.Controllers
 {
@@ -20,6 +22,7 @@ namespace ReversiMvcV2.Controllers
         }
 
         // GET: Spelers
+        [Authorize(Roles = "Beheerder, Mediator")]
         public async Task<IActionResult> Index()
         {
               return _context.Spelers != null ? 
@@ -28,6 +31,7 @@ namespace ReversiMvcV2.Controllers
         }
 
         // GET: Spelers/Details/5
+        [Authorize(Roles = "Beheerder, Mediator")]
         public async Task<IActionResult> Details(string id)
         {
             if (id == null || _context.Spelers == null)
@@ -46,6 +50,7 @@ namespace ReversiMvcV2.Controllers
         }
 
         // GET: Spelers/Create
+        [Authorize(Roles = "Beheerder, Mediator")]
         public IActionResult CreatePage(string guid)
         {
             return View();
@@ -56,6 +61,7 @@ namespace ReversiMvcV2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+     
         public async Task<IActionResult> Create(string naam)
         {
             Speler speler = new Speler(naam);
@@ -87,6 +93,7 @@ namespace ReversiMvcV2.Controllers
         //}
 
         // GET: Spelers/Edit/5
+
         public async Task<IActionResult> Edit(string id)
         {
             if (id == null || _context.Spelers == null)
@@ -107,6 +114,7 @@ namespace ReversiMvcV2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        
         public async Task<IActionResult> Edit(string id, [Bind("Guid,Naam,AantalGewonnen,AantalVerloren,AantalGelijk")] Speler speler)
         {
             if (id != speler.Guid)
@@ -138,6 +146,7 @@ namespace ReversiMvcV2.Controllers
         }
 
         // GET: Spelers/Delete/5
+        [Authorize(Roles = "Beheerder, Mediator")]
         public async Task<IActionResult> Delete(string id)
         {
             if (id == null || _context.Spelers == null)
@@ -156,6 +165,7 @@ namespace ReversiMvcV2.Controllers
         }
 
         // POST: Spelers/Delete/5
+        [Authorize(Roles = "Beheerder, Mediator")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
@@ -179,5 +189,42 @@ namespace ReversiMvcV2.Controllers
         {
           return (_context.Spelers?.Any(e => e.Guid == id)).GetValueOrDefault();
         }
+
+
+
+        // Spelers/Win
+        [HttpPost("Win")]
+        public void Win([FromBody] WinRequest request)
+        {
+            Speler? speler = _context.Spelers.Where(speler => speler.Guid == request.SpelerID).FirstOrDefault();
+            if (speler != null)
+            {
+                switch (request.IsWin)
+                {
+                    case 0:
+                        speler.AantalGelijk += 1;
+                        break;
+                    case 1:
+                        speler.AantalGewonnen += 1;
+                        break;
+                    case 2:
+                        speler.AantalVerloren += 1;
+                        break;
+
+                }
+
+                _context.SaveChanges();
+            }
+        }
+
+            public async Task<IActionResult> Roles(string id)
+            {
+                
+                
+                return View();
+            }
+
+
+        }
     }
-}
+

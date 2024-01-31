@@ -29,6 +29,9 @@ body {
     background-color: brown;
     border: 1px solid black;
     padding: 20px;
+    display: grid;
+    justify-content: center;
+    align-content: center;
 }
 
 .Chip{
@@ -47,5 +50,13 @@ body {
 .White{
     background-color: white;
     border-color: black;
+}
+
+.Disabled{
+    background-color: dimgray;
+}
+
+.Enabled{
+    background-color: ButtonHighlight;
 }
 

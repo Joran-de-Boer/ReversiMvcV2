@@ -44,8 +44,16 @@ namespace ReversiMvcV2.Controllers
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                HttpResponseMessage response = client.GetAsync(client.BaseAddress).Result;
-                if (response.IsSuccessStatusCode)
+
+                HttpResponseMessage response = null;
+                try
+                {
+                    response = client.GetAsync(client.BaseAddress).Result;
+                } catch(Exception ex)
+                {
+
+                }
+                if (response != null && response.IsSuccessStatusCode)
                 {
                     Console.WriteLine(response.Content);
                     SpelJson? spelJson = response.Content.ReadAsAsync<SpelJson>().Result;
@@ -90,6 +98,25 @@ namespace ReversiMvcV2.Controllers
                 var requestContent = new StringContent(request, Encoding.UTF8, "application/json");
 
                 HttpResponseMessage response = client.PutAsync(client.BaseAddress, requestContent).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var stringData = response.Content.ReadAsAsync<Object>();
+                }
+            }
+        }
+
+        public static void CreateSpel(string spelerId, string omschrijving)
+        {
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(api + $"/New");
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                var request = JsonSerializer.Serialize(new CreateSpelRequest() { spelerToken = spelerId, omschrijving = omschrijving });
+                var requestContent = new StringContent(request, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = client.PostAsync(client.BaseAddress, requestContent).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
