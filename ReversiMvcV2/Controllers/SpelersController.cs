@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,17 +14,22 @@ using ReversiMvcV2.Models.Request;
 
 namespace ReversiMvcV2.Controllers
 {
+    //[Authorize(Roles = "Beheerder, mediator")]
     public class SpelersController : Controller
     {
         private readonly SpelerContext _context;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly UserManager<IdentityUser> _userManger;
 
-        public SpelersController(SpelerContext context)
+        public SpelersController(SpelerContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManger = userManager;
+            //_roleManager = roleManager;
         }
 
         // GET: Spelers
-        [Authorize(Roles = "Beheerder, Mediator")]
+        [Authorize(Roles = "Beheerder")]
         public async Task<IActionResult> Index()
         {
               return _context.Spelers != null ? 
@@ -114,8 +121,9 @@ namespace ReversiMvcV2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Beheerder")]
         
-        public async Task<IActionResult> Edit(string id, [Bind("Guid,Naam,AantalGewonnen,AantalVerloren,AantalGelijk")] Speler speler)
+        public async Task<IActionResult> Edit(string id, [Bind("Guid,Naam,AantalGewonnen,AantalVerloren,AantalGelijk,Role")] Speler speler)
         {
             if (id != speler.Guid)
             {
@@ -127,6 +135,10 @@ namespace ReversiMvcV2.Controllers
                 try
                 {
                     _context.Update(speler);
+                    var user = await _userManger.FindByIdAsync(id);
+                    var roles = await _userManger.GetRolesAsync(user);
+                    await _userManger.RemoveFromRolesAsync(user, roles.ToArray());
+                    await _userManger.AddToRoleAsync(user, speler.Role);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -179,6 +191,7 @@ namespace ReversiMvcV2.Controllers
             {
                 _context.Spelers.Remove(speler);
             }
+
             
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

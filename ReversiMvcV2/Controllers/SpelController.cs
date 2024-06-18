@@ -78,7 +78,15 @@ namespace ReversiMvcV2.Controllers
             }
 
             ClaimsPrincipal currentUser = this.User;
-            var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            var nameIdentifier = currentUser.FindFirst(ClaimTypes.NameIdentifier);
+
+            if(nameIdentifier == null)
+            {
+                return Unauthorized();
+            }
+
+            var currentUserID = nameIdentifier.Value;
 
             if (spel.Speler2 is null && spel.Speler1 != currentUserID)
             {

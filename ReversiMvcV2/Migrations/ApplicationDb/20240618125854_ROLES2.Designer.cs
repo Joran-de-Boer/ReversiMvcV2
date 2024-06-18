@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ReversiMvcV2.Data;
 
@@ -11,13 +12,14 @@ using ReversiMvcV2.Data;
 namespace ReversiMvcV2.Migrations.ApplicationDb
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240618125854_ROLES2")]
+    partial class ROLES2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.29")
+                .HasAnnotation("ProductVersion", "6.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -47,29 +49,6 @@ namespace ReversiMvcV2.Migrations.ApplicationDb
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "22e40406-8a9d-2d82-912c-5d6a640ee696",
-                            ConcurrencyStamp = "0fb7dde9-f3e6-47d3-a161-adeddf30c7c8",
-                            Name = "Speler",
-                            NormalizedName = "SPELER"
-                        },
-                        new
-                        {
-                            Id = "b421e928-0613-9ebd-a64c-f10b6a706e73",
-                            ConcurrencyStamp = "1882b81e-fd48-4a6c-8266-b8bbc71d6d7b",
-                            Name = "Beheerder",
-                            NormalizedName = "BEHEERDER"
-                        },
-                        new
-                        {
-                            Id = "47D6DC9B-9B5B-4F9C-A971-82A6BE3ADD8C",
-                            ConcurrencyStamp = "fd9aca24-c5f8-49f9-af63-1481d5430dbb",
-                            Name = "Mediator",
-                            NormalizedName = "MEDIATOR"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

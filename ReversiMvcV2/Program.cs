@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using ReversiMvcV2.DAL;
 using ReversiMvcV2.Data;
 using ReversiMvcV2.Hubs;
+using ReversiMvcV2.Models;
+using System.Drawing.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +18,7 @@ connectionString = builder.Configuration.GetConnectionString("ReversiDb2");
 builder.Services.AddDbContext<SpelerContext>(x => x.UseSqlServer(connectionString));
 builder.Services.AddSignalR();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
@@ -34,6 +36,7 @@ else
     app.UseHsts();
 }
 
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -49,3 +52,35 @@ app.MapRazorPages();
 app.MapHub<ReversiHub>("/ReversiHub");
 
 app.Run();
+
+namespace configure
+{
+    static class Configure
+    {
+        public static void configure(IApplicationBuilder app)
+        {
+            CreateRoles(app.ApplicationServices).Wait();
+        }
+
+        private static async Task CreateRoles(IServiceProvider serviceProvider)
+        {
+            // Initializing custom roles
+            var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
+
+            string[] roleNames = { "BEHEERDER", "MEDIATOR", "SPELER" };
+            IdentityResult roleResult;
+
+            foreach (var roleName in roleNames)
+            {
+                // Check if the role exists, and create it if it does not
+                var roleExist = await roleManager.RoleExistsAsync(roleName);
+                if (!roleExist)
+                {
+                    // Create the roles and seed them to the database
+                    roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
+                }
+            }
+
+        }
+    }
+}
