@@ -15,7 +15,9 @@
 <div>
     <hr />
 </div>
+
 <div>
+    <canvas id="fiches" style="width: 30%;max-width:300px"></canvas>
 <div class="PlayBoard">
     @for (var i = 0; i < 8; i++)
     {   
@@ -28,6 +30,7 @@
     }
     <button id="pass" class="disabled">Pass</button>
 </div>
+    <canvas id="fiches2" style="width: 30%;max-width:300px"></canvas>
 
     @{
         string winUrl = Url.Action("Win", "Spel");
@@ -37,8 +40,117 @@
     }
 
     @section Scripts{
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+        </script>
 
         <script>
+            let fichesChart1 = undefined;
+            let fichesChart2 = undefined;
+            let index = 1;
+
+            const updateStatistics = function(stats){
+                console.log(stats);
+
+                if (!stats.gameStateThroughHistory) {
+                    return;
+                }
+                const lastGameState = stats.gameStateThroughHistory[stats.gameStateThroughHistory.length - 1];
+
+                console.log(lastGameState);
+
+                if(fichesChart1 === undefined){
+                    fichesChart1 = new Chart("fiches", {
+                        type: "bar",
+                        data: {
+                            labels: ["Witte fiches", "Zwarte fiches", "Open plekken"],
+                            datasets: [{
+                                backgroundColor: ["white", "black", "green"],
+                                data: [lastGameState.wit, lastGameState.zwart, lastGameState.onveroverd]
+                            }]
+                        }
+                    })
+                } else {
+                    fichesChart1.data.datasets[0].data[0] = lastGameState.wit;
+                    fichesChart1.data.datasets[0].data[1] = lastGameState.zwart;
+                    fichesChart1.data.datasets[0].data[2] = lastGameState.onveroverd;
+                    fichesChart1.update();
+                }
+
+                const lastGameVeroverd = stats.veroverdeFichesThroughHistory[stats.veroverdeFichesThroughHistory.length - 1];
+
+                console.log(lastGameVeroverd);
+               
+
+                if (fichesChart2 === undefined) {
+
+                    let zwartArray = [];
+                    let witArray = [];
+                    let labels = [1,2,3,4,5,6,7,8,9,10];
+                    stats.veroverdeFichesThroughHistory.forEach((x) => {
+                        if(x.zwart == null || x.wit == null){
+
+                        } else {
+                            if(index > 10){
+                                labels.push(index);
+                            }
+                            
+                            zwartArray.push(x.zwart);
+                            witArray.push(x.wit);
+                            index++;
+                        }
+                    })
+
+                    console.log("zwartArray");
+                    console.log(zwartArray);
+                    console.log("witArray");
+                    console.log(witArray);
+                    console.log("labels");
+                    console.log(labels);
+
+                    fichesChart2 = new Chart("fiches2", {
+                        type: "line",
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: zwartArray,
+                                borderColor: "black",
+                                fill: false
+                            }, {
+                                data: witArray,
+                                borderColor: "gray",
+                                fill: false
+                            }],
+
+                        }
+                    })
+
+                    console.log(fichesChart2);
+                } else {
+                    if(index > 10){
+                        fichesChart2.labels.push(index);
+                    }
+
+                    let currentDataset = 0;
+
+                    fichesChart2.data.datasets.forEach((x) => {
+                        if(currentDataset == 0){
+                            x.data.push(lastGameVeroverd.zwart);
+                        }
+
+                        if(currentDataset == 1){
+                            x.data.push(lastGameVeroverd.wit);
+                        }
+
+                        currentDataset++;
+                        
+                    })
+                    index++;
+                    fichesChart2.update();
+                }
+                
+            }
+
+
             const gameToken = `@Model.ID`;
             console.log(gameToken);
             const playerToken = `@playerToken`;
@@ -71,11 +183,12 @@
                 
         </script>
 
+        
         <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
         <script src="~/js/SignalR.js"></script>
         <script src="~/js/app.js"></script>
         <script>
-            Game.init();
+            Game.init(updateStatistics);
         </script>
     }
 </div>

@@ -35,16 +35,33 @@ namespace ReversiMvcV2.Controllers
 
             if (speler == null)
             {
+                var emailprincipal = currentUser.FindFirstValue(ClaimTypes.Email);
+                var email = "";
+
+
+                if(emailprincipal != null)
+                {
+                    email = emailprincipal.ToString();
+                }
+
+                var rolePrincipal = currentUser.FindFirstValue(ClaimTypes.Role);
+                var role = "Speler";
+
+                if(rolePrincipal != null)
+                {
+                    role = rolePrincipal.ToString();
+                }
+
                 var newSpeler = new Speler
                 {
                     AantalGelijk = 0,
                     AantalGewonnen = 0,
                     AantalVerloren = 0,
-                    Naam = currentUser.FindFirstValue(ClaimTypes.Email).ToString(),
+                    Naam = email,
                     Guid = currentUserID,
-                    Role = currentUser.FindFirstValue(ClaimTypes.Role).ToString(),
+                    Role = role,
                 };
-                _context.Spelers.Add(new Speler(currentUserID, currentUser.FindFirstValue(ClaimTypes.Email).ToString()));
+                _context.Spelers.Add(newSpeler);
                 _context.SaveChanges();
             }
 
