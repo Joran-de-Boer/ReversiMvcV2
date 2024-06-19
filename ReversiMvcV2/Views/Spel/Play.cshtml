@@ -16,7 +16,7 @@
     <hr />
 </div>
 
-<div>
+<div style="display: flex;align-items: center;">
     <canvas id="fiches" style="width: 30%;max-width:300px"></canvas>
 <div class="PlayBoard">
     @for (var i = 0; i < 8; i++)
@@ -40,10 +40,10 @@
     }
 
     @section Scripts{
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
-        </script>
+ 
 
         <script>
+            Chart.defaults.plugins.legend.display = false;
             let fichesChart1 = undefined;
             let fichesChart2 = undefined;
             let index = 1;
@@ -67,6 +67,17 @@
                                 backgroundColor: ["white", "black", "green"],
                                 data: [lastGameState.wit, lastGameState.zwart, lastGameState.onveroverd]
                             }]
+                        },
+                        options: {
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: "Aantal fiches op bord"
+                                },
+                                legend: {
+                                    display: false
+                                }
+                            }
                         }
                     })
                 } else {

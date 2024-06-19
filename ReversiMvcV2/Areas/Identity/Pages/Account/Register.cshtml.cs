@@ -122,7 +122,7 @@ namespace ReversiMvcV2.Areas.Identity.Pages.Account
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
                 var roles = await _userManager.GetRolesAsync(user);
                 await _userManager.RemoveFromRolesAsync(user, roles.ToArray());
-                await _userManager.AddToRoleAsync(user, "Speler");
+                //await _userManager.AddToRoleAsync(user, "Speler");
 
                 var result = await _userManager.CreateAsync(user, Input.Password);
 

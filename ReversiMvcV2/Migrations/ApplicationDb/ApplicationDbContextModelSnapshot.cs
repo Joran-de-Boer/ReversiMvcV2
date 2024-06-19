@@ -52,21 +52,21 @@ namespace ReversiMvcV2.Migrations.ApplicationDb
                         new
                         {
                             Id = "22e40406-8a9d-2d82-912c-5d6a640ee696",
-                            ConcurrencyStamp = "8fca4728-feea-463a-aac2-d95fd7a62fd3",
+                            ConcurrencyStamp = "1d917219-8905-4660-9285-298519e22f1b",
                             Name = "Speler",
                             NormalizedName = "SPELER"
                         },
                         new
                         {
                             Id = "b421e928-0613-9ebd-a64c-f10b6a706e73",
-                            ConcurrencyStamp = "e99528f9-4f0d-4976-b61e-1bc7a5962933",
+                            ConcurrencyStamp = "f5b080cb-f13f-44d9-b0c4-5b86a2030a95",
                             Name = "Beheerder",
                             NormalizedName = "BEHEERDER"
                         },
                         new
                         {
                             Id = "47D6DC9B-9B5B-4F9C-A971-82A6BE3ADD8C",
-                            ConcurrencyStamp = "39c795fe-8b6e-44ff-8c75-a2fc2340049a",
+                            ConcurrencyStamp = "e21343fd-c730-4ce8-8cad-7bd0b48b2e9d",
                             Name = "Mediator",
                             NormalizedName = "MEDIATOR"
                         });
