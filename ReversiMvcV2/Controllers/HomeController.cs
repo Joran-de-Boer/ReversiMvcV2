@@ -32,6 +32,7 @@ namespace ReversiMvcV2.Controllers
 
             var user = await _userManager.FindByIdAsync(currentUserID);
             var roles = await _userManager.GetRolesAsync(user);
+            Console.WriteLine(roles);
 
             if (speler == null)
             {

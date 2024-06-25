@@ -9,6 +9,7 @@
         public Kleur? AanDeBeurt { get; set; }
         public string Speler1 { get; set; }
         public string? Speler2 { get; set; }
+        public Speler Owner { get; set; }
 
         public Spel(string speler, string omschrijving)
         {

@@ -3,11 +3,22 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-control" content="no-cache"/>
+@*    <meta http-equiv="content-security-policy" 
+    content="base-uri 'self';
+    block-all-mixed-content;
+    default-src 'self';
+    img-src data: https:;
+    object-src 'none';
+    script-src 'self';
+    style-src 'self';
+    upgrade-insecure-requests;"/>*@
+"
     <title>@ViewData["Title"] - ReversiMvcV2</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ReversiMvcV2.styles.css" asp-append-version="true" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/chart.js">
     </script>
 </head>
 <body>

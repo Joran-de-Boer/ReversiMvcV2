@@ -30,6 +30,7 @@ namespace ReversiMvcV2.Controllers
                     Console.WriteLine(response.Content);
                     List<SpelJson>? spellenJson = response.Content.ReadAsAsync<List<SpelJson>>().Result;
                     List<Spel> spellen = spellenJson.Select(x => new Spel(x)).ToList();
+                
                     return spellen;
                 }
                 return null;

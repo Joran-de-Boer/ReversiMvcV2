@@ -30,7 +30,6 @@ var Game = function (apiUrl) {
 
   var privateInit = function privateInit(updateStatisticsCall) {
     configMap.apiUrl = apiUrl;
-    console.log(updateStatisticsCall);
     Game.Model.init(configMap.apiUrl, configMap.gameToken, configMap.playerToken);
     Game.Data.init(configMap.apiUrl, configMap.gameToken, configMap.playerToken);
     Game.Reversi.init(configMap.apiUrl, configMap.gameToken, configMap.playerToken, win, draw, lose);
@@ -38,14 +37,13 @@ var Game = function (apiUrl) {
     window.addEventListener("beforeunload", Game.Reversi.doLeave);
     var interval = setInterval(function () {
       _getCurrentGameState(interval);
-    }, 20);
+    }, 30);
     configMap.interval = interval;
   };
 
   var _getCurrentGameState = function _getCurrentGameState(interval) {
     var newGameState = Game.Model.getGameState();
     newGameState.then(function (response) {
-      console.log(response);
 
       if (response.afgelopen) {
         clearInterval(interval);
@@ -232,7 +230,6 @@ Game.Reversi = function () {
       }
     };
     Game.Data.put("".concat(configMap.apiUrl, "api/spel/zet"), body).then(function (response) {
-      console.log(response);
     }); //Game._getCurrentGameState();
   };
 
@@ -242,7 +239,6 @@ Game.Reversi = function () {
       spelerToken: configMap.playerToken
     };
     Game.Data.put("".concat(configMap.apiUrl, "api/spel/pass"), body).then(function (response) {
-      console.log(response);
     })["catch"](function (error) {
       console.log(error);
     }).then(function () {//_getCurrentGameState();
@@ -379,7 +375,6 @@ Game.Stats = function () {
   };
 
   var _getStats = function _getStats() {
-    console.log("STATS GOTTEN");
     return {
       gameStateThroughHistory: gameStateThroughHistory,
       veroverdeFichesThroughHistory: veroverdeFichesThroughHistory

@@ -40,10 +40,10 @@
     }
 
     @section Scripts{
- 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+        </script>
 
         <script>
-            Chart.defaults.plugins.legend.display = false;
             let fichesChart1 = undefined;
             let fichesChart2 = undefined;
             let index = 1;
@@ -69,14 +69,10 @@
                             }]
                         },
                         options: {
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: "Aantal fiches op bord"
-                                },
-                                legend: {
-                                    display: false
-                                }
+                            legend: {display: false},
+                            title: {
+                                display: true,
+                                text: "Fiches per speler"
                             }
                         }
                     })
@@ -96,7 +92,7 @@
 
                     let zwartArray = [];
                     let witArray = [];
-                    let labels = [1,2,3,4,5,6,7,8,9,10];
+                    let labels = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60];
                     stats.veroverdeFichesThroughHistory.forEach((x) => {
                         if(x.zwart == null || x.wit == null){
 
@@ -110,13 +106,6 @@
                             index++;
                         }
                     })
-
-                    console.log("zwartArray");
-                    console.log(zwartArray);
-                    console.log("witArray");
-                    console.log(witArray);
-                    console.log("labels");
-                    console.log(labels);
 
                     fichesChart2 = new Chart("fiches2", {
                         type: "line",
@@ -132,13 +121,21 @@
                                 fill: false
                             }],
 
+                        },
+                        options: {
+                            legend: {display: false},
+                            title: {
+                                text: "Aantal overgenomen fiches per speler",
+                                display: true
+                            }
                         }
                     })
 
-                    console.log(fichesChart2);
                 } else {
                     if(index > 10){
+                        
                         fichesChart2.labels.push(index);
+                        
                     }
 
                     let currentDataset = 0;
@@ -163,7 +160,6 @@
 
 
             const gameToken = `@Model.ID`;
-            console.log(gameToken);
             const playerToken = `@playerToken`;
             let win = function(){ fetch(`@winUrl`, {
             method: 'POST',

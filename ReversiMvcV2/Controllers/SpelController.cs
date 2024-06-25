@@ -45,7 +45,18 @@ namespace ReversiMvcV2.Controllers
             {
                 return View(new List<Spel>());
             }
-            
+
+            var spelers = _context.Spelers.ToList();
+
+            foreach (var spel in spellen)
+            {
+                var owner = spelers.Find(x => x.Guid == spel.Speler1);
+                if(owner != null)
+                {
+                    spel.Owner = owner;
+                }
+            }
+
             return View(spellen);
         }
 
