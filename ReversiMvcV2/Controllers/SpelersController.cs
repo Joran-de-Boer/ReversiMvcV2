@@ -310,7 +310,12 @@ namespace ReversiMvcV2.Controllers
                 return View();
             }
 
-
+        public async Task<IActionResult> ScoreBoard()
+        {
+            return _context.Spelers != null ?
+                          View(await _context.Spelers.ToListAsync()) :
+                          Problem("Entity set 'SpelerContext.Spelers'  is null.");
         }
     }
+}
 

@@ -3,10 +3,6 @@
     ViewData["Title"] = "Index";
 }
 
-
-
-<h1>Index</h1>
-
 <p>
     <a asp-action="Create">Create New</a>
 </p>
@@ -32,7 +28,7 @@
                     @((item.Owner != null) ? item.Owner.Naam : item.Speler1)
                 </td>
             <td>
-                <a asp-action="Play" asp-route-id="@item.ID">Play</a> |
+                <a asp-action="Play" asp-route-id="@item.ID">Play</a>
             </td>
         </tr>
 }

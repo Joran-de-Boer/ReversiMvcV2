@@ -73,6 +73,12 @@
                             title: {
                                 display: true,
                                 text: "Fiches per speler"
+                            },
+                            scales: {
+                                y:{
+                                    min: 0,
+                                    max: 64
+                                }
                             }
                         }
                     })
@@ -132,10 +138,9 @@
                     })
 
                 } else {
-                    if(index > 10){
+                    if(fichesChart2.data.labels.length >= 10){
                         
-                        fichesChart2.labels.push(index);
-                        
+                        fichesChart2.data.labels.push(fichesChart2.data.labels.length + 1);
                     }
 
                     let currentDataset = 0;

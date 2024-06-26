@@ -37,19 +37,42 @@ var Game = function (apiUrl) {
     window.addEventListener("beforeunload", Game.Reversi.doLeave);
     var interval = setInterval(function () {
       _getCurrentGameState(interval);
-    }, 30);
+    }, 50);
     configMap.interval = interval;
+  };
+
+  var _gameStatesAreEqual = function _gameStatesAreEqual(gamestate1, gamestate2) {
+    if (gamestate1 == undefined || gamestate2 == undefined) {
+      return false;
+    }
+
+    if (gamestate1.aanDeBeurt != gamestate2.aanDeBeurt) {
+      return false;
+    }
+
+    if (gamestate1.afgelopen != gamestate2.afgelopen) {
+      return false;
+    }
+
+    if (gamestate1.bord != gamestate2.bord) {
+      return false;
+    }
+
+    if (gamestate1.zetMogelijk != gamestate2.zetMogelijk) {
+      return false;
+    }
+
+    return true;
   };
 
   var _getCurrentGameState = function _getCurrentGameState(interval) {
     var newGameState = Game.Model.getGameState();
     newGameState.then(function (response) {
-
       if (response.afgelopen) {
         clearInterval(interval);
       }
 
-      if (response != stateMap.gameState) {
+      if (!_gameStatesAreEqual(response, stateMap.gameState)) {
         stateMap.gameState = response;
         Game.Reversi.updateGameState(response);
       }
@@ -229,8 +252,7 @@ Game.Reversi = function () {
         kolomZet: y
       }
     };
-    Game.Data.put("".concat(configMap.apiUrl, "api/spel/zet"), body).then(function (response) {
-    }); //Game._getCurrentGameState();
+    Game.Data.put("".concat(configMap.apiUrl, "api/spel/zet"), body).then(function (response) {}); //Game._getCurrentGameState();
   };
 
   var doPass = function doPass() {
@@ -238,10 +260,7 @@ Game.Reversi = function () {
       spelToken: configMap.gameToken,
       spelerToken: configMap.playerToken
     };
-    Game.Data.put("".concat(configMap.apiUrl, "api/spel/pass"), body).then(function (response) {
-    })["catch"](function (error) {
-      console.log(error);
-    }).then(function () {//_getCurrentGameState();
+    Game.Data.put("".concat(configMap.apiUrl, "api/spel/pass"), body).then(function (response) {})["catch"](function (error) {}).then(function () {//_getCurrentGameState();
     });
   };
 
@@ -263,24 +282,36 @@ Game.Reversi = function () {
 
     if (beurt && !Afgelopen && !ZetMogelijk) {
       $("#pass").click("click", doPass);
+      console.log("Pass");
+      alert("Geen zetmogelijk, druk op pass");
     }
 
     if (Afgelopen) {
-      console.log("AFGELOPEN");
       var url = window.location.href;
       var parts = url.split("/");
       url = parts[0] + "//" + parts[2] + "/" + parts[3];
       $(".Tile").off("click");
 
       if (Gewonnen) {
-        alert("Gewonnen");
+        console.log("Tried to alert");
+        var retval = confirm("Gewonnen, wil je terug naar de spel pagina?");
         configMap.win();
-        window.location.href = url;
+
+        if (retval) {
+          window.location.href = url;
+        }
+
         return;
       } else {
-        alert("Verloren");
+        var _retval = confirm("Verloren,  wil je terug naar de spel pagina?");
+
+        console.log("Tried to alert");
         configMap.lose();
-        window.location.href = url;
+
+        if (_retval) {
+          window.location.href = url;
+        }
+
         return;
       }
 

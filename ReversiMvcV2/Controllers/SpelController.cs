@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ReversiMvcV2.DAL;
 using ReversiMvcV2.Models;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace ReversiMvcV2.Controllers
 {
@@ -31,10 +32,10 @@ namespace ReversiMvcV2.Controllers
             {
                 if (userid != null)
                 {
-                    var game = redirecter.TryRedirectToGame(userid);
+                    var game = ApiRequester.GetSpelByPlayerId(userid);
                     if (game != null)
                     {
-                        return (ActionResult)game;
+                        return RedirectToAction("RedirectPage");
                     }
                 }
             }
@@ -126,17 +127,6 @@ namespace ReversiMvcV2.Controllers
             using (GetClaimsPrincipal getter = new GetClaimsPrincipal())
             {
                 userid = getter.GetUserId(this.User);
-            }
-            using (Redirecter redirecter = new Redirecter())
-            {
-                if (userid != null)
-                {
-                    var game = redirecter.TryRedirectToGame(userid);
-                    if (game != null)
-                    {
-                        return (ActionResult)game;
-                    }
-                }
             }
             return View();
         }
@@ -235,6 +225,67 @@ namespace ReversiMvcV2.Controllers
                 _context.SaveChanges();
             }
 
+        }
+
+        public ActionResult RedirectPage()
+        {
+            return View();
+        }
+
+        [HttpPost("RedirectToGame")]
+        public ActionResult RedirectToGame()
+        {
+            string userid;
+            using (GetClaimsPrincipal getter = new GetClaimsPrincipal())
+            {
+                userid = getter.GetUserId(this.User);
+            }
+            using (Redirecter redirecter = new Redirecter())
+            {
+                if (userid != null)
+                {
+                    var game = (ActionResult?)redirecter.TryRedirectToGame(userid);
+
+                    if(game != null)
+                    {
+                        return game;
+                    }
+                                     
+                }
+            }
+
+            return RedirectToAction("index");
+
+        }
+
+        [HttpPost("LeaveGame")]
+        public ActionResult LeaveGame()
+        {
+            string userid;
+            using (GetClaimsPrincipal getter = new GetClaimsPrincipal())
+            {
+                userid = getter.GetUserId(this.User);
+            }
+            var game = ApiRequester.GetSpelByPlayerId(userid);
+
+            if(game != null)
+            {
+                Lose();
+                using (HttpClient httpClient = new HttpClient())
+                {
+                    var values = new
+                    {
+                        SpelId = game.ID,
+                        SpelerId = userid
+                    };
+
+                    var json = JsonSerializer.Serialize(values);
+
+                    httpClient.PostAsJsonAsync("https://localhost:7258/api/spel/leave", json);
+                }
+            }
+
+            return RedirectToAction("index");
         }
     }
 }

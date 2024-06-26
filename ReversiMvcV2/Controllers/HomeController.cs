@@ -32,7 +32,6 @@ namespace ReversiMvcV2.Controllers
 
             var user = await _userManager.FindByIdAsync(currentUserID);
             var roles = await _userManager.GetRolesAsync(user);
-            Console.WriteLine(roles);
 
             if (speler == null)
             {
@@ -72,7 +71,7 @@ namespace ReversiMvcV2.Controllers
                 return RedirectToAction("Play", "Spel", new { spel.ID });
             }
 
-            return View();
+            return RedirectToAction("Index", "Spel");
         }
 
         [Authorize]

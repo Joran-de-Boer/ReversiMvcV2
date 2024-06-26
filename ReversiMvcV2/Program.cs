@@ -1,3 +1,5 @@
+using GoogleReCaptcha.V3;
+using GoogleReCaptcha.V3.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ReversiMvcV2.DAL;
@@ -17,6 +19,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 connectionString = builder.Configuration.GetConnectionString("ReversiDb2");
 builder.Services.AddDbContext<SpelerContext>(x => x.UseSqlServer(connectionString));
 builder.Services.AddSignalR();
+builder.Services.AddHttpClient<ICaptchaValidator, GoogleReCaptchaValidator>();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -34,7 +37,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
-    app.UseExceptionHandler("/Home/Error");
+   //app.UseExceptionHandler("/Home/Error");
 }
 else
 {
